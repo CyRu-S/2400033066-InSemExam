@@ -1,170 +1,110 @@
-import React, { useState, useEffect, createContext, useContext } from 'react'
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import React, { useState } from 'react'
 
-// Theme context
-const ThemeContext = createContext()
-const useTheme = () => useContext(ThemeContext)
+const App = () => {
+  const products = [
+    { id: 1, name: 'Pen', price: 10, category: 'stationary' },
+    { id: 2, name: 'Notebook', price: 50, category: 'stationary' },
+    { id: 3, name: 'Pencil', price: 5, category: 'stationary' },
+    { id: 4, name: 'Backpack', price: 500, category: 'bags' },
+    { id: 5, name: 'Laptop Bag', price: 800, category: 'bags' },
+    { id: 6, name: 'Laptop', price: 50000, category: 'electronics' },
+    { id: 7, name: 'Mouse', price: 300, category: 'electronics' },
+    { id: 8, name: 'Keyboard', price: 1200, category: 'electronics' },
+    { id: 9, name: 'Eraser', price: 3, category: 'stationary' },
+    { id: 10, name: 'Travel Bag', price: 1500, category: 'bags' }
+  ];
 
-function ThemeProvider({ children }) {
-  const [dark, setDark] = useState(false)
-  useEffect(() => {
-    document.body.style.background = dark ? '#121212' : '#fff'
-    document.body.style.color = dark ? '#e6e6e6' : '#111'
-  }, [dark])
-  return (
-    <ThemeContext.Provider value={{ dark, toggle: () => setDark(d => !d) }}>
-      {children}
-    </ThemeContext.Provider>
-  )
-}
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
-// Simple Nav
-function Nav() {
-  const { dark, toggle } = useTheme()
-  const linkStyle = { marginRight: 12 }
-  return (
-    <nav style={{ padding: 12 }}>
-      <Link to='/' style={linkStyle}>Home</Link>
-      <Link to='/about' style={linkStyle}>About</Link>
-      <Link to='/contact' style={linkStyle}>Contact</Link>
-      <button onClick={toggle} style={{ float: 'right' }}>{dark ? 'Light' : 'Dark'}</button>
-    </nav>
-  )
-}
-
-// Home page embeds the Student Manager
-function Home() {
-  return (
-    <div style={{ padding: 12 }}>
-      <h2>Student Manager</h2>
-      <StudentsManager />
-    </div>
-  )
-}
-
-function About() {
-  return (
-    <div style={{ padding: 12 }}>
-      <h2>About</h2>
-      <p>Minimal React demo: CRUD, routing, search, fetch, theme.</p>
-    </div>
-  )
-}
-
-function Contact() {
-  return (
-    <div style={{ padding: 12 }}>
-      <h2>Contact</h2>
-      <p>Example contact page.</p>
-    </div>
-  )
-}
-
-// StudentsManager: CRUD + search + fetch
-function StudentsManager() {
-  const [students, setStudents] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [query, setQuery] = useState('')
-
-  // form state
-  const [form, setForm] = useState({ id: null, name: '', email: '' })
-
-  // fetch sample data once
-  useEffect(() => {
-    setLoading(true)
-    fetch('https://jsonplaceholder.typicode.com/users')
-      .then(r => r.json())
-      .then(data => {
-        // keep only id, name, email and take first 5 to keep small
-        const list = data.slice(0, 10).map(u => ({ id: u.id, name: u.name, email: u.email }))
-        setStudents(list)
-        setLoading(false)
-      })
-      .catch(e => { setError('Failed fetching'); setLoading(false) })
-  }, [])
-
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
-
-  function addOrUpdate(e) {
-    e.preventDefault()
-    if (!form.name.trim()) return
-    if (form.id == null) {
-      // add
-      const newStudent = { ...form, id: Date.now() }
-      setStudents(s => [newStudent, ...s])
-    } else {
-      // update
-      setStudents(s => s.map(x => (x.id === form.id ? { ...form } : x)))
-    }
-    setForm({ id: null, name: '', email: '' })
-  }
-
-  function editStudent(s) {
-    setForm(s)
-  }
-
-  function deleteStudent(id) {
-    setStudents(prev => {
-        const next = prev.filter(x => String(x.id) !== String(id))
-      return next
-    })
-  }
-
-  // filtered list
-  const filtered = students.filter(s =>
-    s.name.toLowerCase().includes(query.toLowerCase()) ||
-    (s.email || '').toLowerCase().includes(query.toLowerCase())
-  )
+  const filteredProducts = selectedCategory === 'all' 
+    ? products 
+    : products.filter(product => product.category === selectedCategory);
 
   return (
-    <div>
-      <div style={{ marginBottom: 12 }}>
-        <input placeholder='Search by name or email' value={query} onChange={e => setQuery(e.target.value)} />
+    <div style={{ padding: '20px', fontFamily: 'Chillax', textAlign: 'center' }}>
+      <h1 style={{ fontSize: '82', fontWeight: '500'}}>Product Listing</h1>
+
+      <div style={{ marginBottom: '20px' }}>
+        <button 
+          onClick={() => setSelectedCategory('all')}
+          style={{
+            padding: '10px 20px',
+            margin: '5px',
+            backgroundColor: selectedCategory === 'all' ? '#007bff' : '#f0f0f0',
+            color: selectedCategory === 'all' ? 'white' : 'black',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          All
+        </button>
+        <button 
+          onClick={() => setSelectedCategory('stationary')}
+          style={{
+            padding: '10px 20px',
+            margin: '5px',
+            backgroundColor: selectedCategory === 'stationary' ? '#007bff' : '#f0f0f0',
+            color: selectedCategory === 'stationary' ? 'white' : 'black',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          Stationary
+        </button>
+        <button 
+          onClick={() => setSelectedCategory('bags')}
+          style={{
+            padding: '10px 20px',
+            margin: '5px',
+            backgroundColor: selectedCategory === 'bags' ? '#007bff' : '#f0f0f0',
+            color: selectedCategory === 'bags' ? 'white' : 'black',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          Bags
+        </button>
+        <button 
+          onClick={() => setSelectedCategory('electronics')}
+          style={{
+            padding: '10px 20px',
+            margin: '5px',
+            backgroundColor: selectedCategory === 'electronics' ? '#007bff' : '#f0f0f0',
+            color: selectedCategory === 'electronics' ? 'white' : 'black',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          Electronics
+        </button>
       </div>
-
-      <form onSubmit={addOrUpdate} style={{ marginBottom: 12 }}>
-        <input name='name' placeholder='Name' value={form.name} onChange={handleChange} />
-        <input name='email' placeholder='Email' value={form.email} onChange={handleChange} style={{ marginLeft: 8 }} />
-        <button type='submit' style={{ marginLeft: 8 }}>{form.id == null ? 'Add' : 'Update'}</button>
-        {form.id != null && <button type='button' onClick={() => setForm({ id: null, name: '', email: '' })} style={{ marginLeft: 8 }}>Cancel</button>}
-      </form>
-
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      <ul style={{ paddingLeft: 0 }}>
-        {filtered.map(s => (
-          <li key={s.id} style={{ listStyle: 'none', marginBottom: 8, padding: 8, border: '1px solid #ddd' }}>
-            <div><strong>{s.name}</strong> <small>({s.email})</small></div>
-            <div style={{ marginTop: 6 }}>
-              <button onClick={() => editStudent(s)}>Edit</button>
-              <button onClick={() => deleteStudent(s.id)} style={{ marginLeft: 8 }}>Delete</button>
-            </div>
-          </li>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
+        {filteredProducts.map(product => (
+          <div 
+            key={product.id}
+            style={{
+              border: '1px solid #ddd',
+              borderRadius: '8px',
+              padding: '15px',
+              backgroundColor: 'white',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}
+          >
+            <h3 style={{ color: '#666', margin: '0 0 10px 0' }}>{product.name}</h3>
+            <p style={{ color: '#666', margin: '5px 0' }}>Category: {product.category}</p>
+            <p style={{ color: '#007bff', fontWeight: 'bold', fontSize: '18px', margin: '10px 0 0 0' }}>
+              ₹{product.price}
+            </p>
+          </div>
         ))}
-      </ul>
-
-      {filtered.length === 0 && !loading && <p>No students found.</p>}
+      </div>
     </div>
   )
 }
 
-// App root
-export default function App() {
-  return (
-    <ThemeProvider>
-      <Router>
-        <div style={{ fontFamily: 'Arial, sans-serif', maxWidth: 800, margin: '0 auto' }}>
-          <Nav />
-          <hr />
-          <Routes>
-            <Route path='/' element={<Home />} />
-            <Route path='/about' element={<About />} />
-            <Route path='/contact' element={<Contact />} />
-          </Routes>
-        </div>
-      </Router>
-    </ThemeProvider>
-  )
-}
+export default App
